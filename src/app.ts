@@ -1,18 +1,15 @@
 import express from 'express';
-import { createConnection } from 'typeorm'
+import { db } from './db'
 
 const main = async () => {
-  const app = express()
+  const app = express();
+  const PORT = process.env.PORT || 4000;
 
-  // if you don't use any options on createConnection(), createConnection looks for .ormconfig.json automatically.
-  const connection = await createConnection()
-    .catch(error => {
-      console.error('TypeORM Error: Fail to connect ', error)
-    });
+  db();
 
-  app.listen(4000, () => {
-    console.log('listening on localhost:4000')
-  })
+  app.listen(PORT, () => {
+    console.log('listening on localhost:4000');
+  });
 }
 
 export default main
