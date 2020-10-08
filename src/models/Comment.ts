@@ -1,6 +1,5 @@
 import { ObjectType, Field } from "type-graphql"
-import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm'
-import { Timestamp } from "./Timestamp";
+import { BaseEntity, Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm'
 import { User } from "./User";
 
 @ObjectType()
@@ -16,12 +15,15 @@ export class Comment extends BaseEntity {
 
   @Field()
   @Column()
-  userId: number;
+  userId: string;
 
   @Field()
   @ManyToOne(() => User, user => user.comments)
   user: User;
 
-  @Column(_type => Timestamp)
-  timestamp: Timestamp
+  @CreateDateColumn({ default: 'NOW()' })
+  createdAt: Date;
+
+  @UpdateDateColumn({ default: 'NOW()' })
+  updatedAt: Date;
 } 

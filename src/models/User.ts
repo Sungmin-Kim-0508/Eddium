@@ -1,8 +1,7 @@
 import { ObjectType, Field } from "type-graphql"
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BaseEntity } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BaseEntity, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { Story } from "./Story";
 import { Comment } from "./Comment";
-import { Timestamp } from "./Timestamp";
 
 @ObjectType()
 @Entity()
@@ -33,6 +32,9 @@ export class User extends BaseEntity {
   @OneToMany(() => Comment, comment => comment.user)
   comments: Comment[]
 
-  @Column(_type => Timestamp)
-  timestamp: Timestamp
+  @CreateDateColumn({ default: 'NOW()' })
+  createdAt: Date;
+
+  @UpdateDateColumn({ default: 'NOW()' })
+  updatedAt: Date;
 }

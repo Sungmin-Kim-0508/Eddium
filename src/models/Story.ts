@@ -31,7 +31,7 @@ export class Story extends BaseEntity {
 
   @Field()
   @Column()
-  userId: number;
+  userId: string;
 
   @ManyToOne(() => User, user => user.stories)
   user: User;
