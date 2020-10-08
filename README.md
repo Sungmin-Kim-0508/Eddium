@@ -1,6 +1,9 @@
 # Medium Clone
 ## Live Demo
 
+## Build Process Journal
+https://www.notion.so/Medium-Blog-Eddium-62e99f13065b4708922dd01c9eef9395
+
 ## Tech Stacks
 * FrontEnd: Next.js + React + Typescript
 * BackEnd: Node.js+Express.js, GraphQL, PostgreSQL, TypeORM

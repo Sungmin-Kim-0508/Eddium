@@ -4,11 +4,11 @@
    "port": 5432,
    "username": "postgres",
    "password": "admin",
-   "database": "median_blog",
+   "database": "eddium",
    "synchronize": true,
    "logging": false,
    "entities": [
-      "src/entities/**/*.ts"
+      "dist/models/**/*.js"
    ],
    "migrations": [
       "src/migrations/**/*.ts"
@@ -17,7 +17,7 @@
       "src/subscribers/**/*.ts"
    ],
    "cli": {
-      "entitiesDir": "src/entities",
+      "entitiesDir": "src/models",
       "migrationsDir": "src/migrations",
       "subscribersDir": "src/subscribers"
    }
