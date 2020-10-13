@@ -77,10 +77,7 @@ export class UserResolver {
         }
       }
 
-      let hashedPassword = '';
-      bcrypt.hash(password, 20, (err, hash) => {
-        hashedPassword = hash
-      })
+      const hashedPassword = bcrypt.hashSync(password, 10)
       
       const user = await userService.create(firstName, lastName, email, hashedPassword)
 
@@ -93,6 +90,8 @@ export class UserResolver {
             message: 'email already existed'
           }]
         }
+      } else {
+        throw new Error('Error:' + error)
       }
     }
   }
