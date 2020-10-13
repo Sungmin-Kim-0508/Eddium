@@ -1,12 +1,13 @@
 import { ObjectType, Field } from "type-graphql"
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, BaseEntity, ManyToOne, UpdateDateColumn } from 'typeorm'
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, UpdateDateColumn, OneToMany } from 'typeorm'
+import { SavedStory } from "./SavedStory";
 import { User } from "./User";
 
 @ObjectType()
-@Entity()
-export class Story extends BaseEntity {
+@Entity({ name: 'Stories' })
+export class Story {
   @Field()
-  @PrimaryGeneratedColumn({ type: "uuid" })
+  @PrimaryGeneratedColumn("uuid")
   id: string;
 
   @Field()
@@ -23,15 +24,18 @@ export class Story extends BaseEntity {
 
   @Field()
   @Column({ type:'int', default: 0 })
-  view: number
+  view: number;
 
   @Field()
   @Column({ type:'int', default: 0 })
-  clap: number
+  clap: number;
 
   @Field()
   @Column()
   userId: string;
+
+  @OneToMany(() => SavedStory, savedStory => savedStory.story)
+  savedStories: SavedStory[];
 
   @ManyToOne(() => User, user => user.stories)
   user: User;

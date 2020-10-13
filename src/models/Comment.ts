@@ -1,12 +1,12 @@
 import { ObjectType, Field } from "type-graphql"
-import { BaseEntity, Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm'
+import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm'
 import { User } from "./User";
 
 @ObjectType()
-@Entity()
-export class Comment extends BaseEntity {
+@Entity({ name: 'Comments' })
+export class Comment {
   @Field()
-  @PrimaryGeneratedColumn({ type: "uuid" })
+  @PrimaryGeneratedColumn("uuid")
   id: string;
 
   @Field()
@@ -17,7 +17,6 @@ export class Comment extends BaseEntity {
   @Column()
   userId: string;
 
-  @Field()
   @ManyToOne(() => User, user => user.comments)
   user: User;
 

@@ -1,13 +1,14 @@
 import { ObjectType, Field } from "type-graphql"
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BaseEntity, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, CreateDateColumn, UpdateDateColumn, ManyToMany, JoinTable, BaseEntity } from 'typeorm';
 import { Story } from "./Story";
 import { Comment } from "./Comment";
+import { SavedStory } from "./SavedStory";
 
-@ObjectType()
-@Entity()
+@ObjectType({ description: 'This is User model' })
+@Entity({ name: 'Users' })
 export class User extends BaseEntity {
   @Field()
-  @PrimaryGeneratedColumn({ type: "uuid" })
+  @PrimaryGeneratedColumn("uuid")
   id: string;
   
   @Field()
@@ -19,7 +20,7 @@ export class User extends BaseEntity {
   lastName: string;
 
   @Field()
-  @Column()
+  @Column({ unique: true })
   email: string;
 
   @Field()
@@ -30,7 +31,11 @@ export class User extends BaseEntity {
   stories: Story[];
 
   @OneToMany(() => Comment, comment => comment.user)
-  comments: Comment[]
+  comments: Comment[];
+
+  @ManyToMany(_type => SavedStory)
+  @JoinTable({ name: 'UserSavedStories' })
+  savedStories: SavedStory[];
 
   @CreateDateColumn({ default: 'NOW()' })
   createdAt: Date;
