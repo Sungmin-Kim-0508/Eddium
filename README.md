@@ -1,6 +1,6 @@
 # Medium Clone
 ## Live Demo
-
+(Since completing to post stories)
 ## Build Process Journal
 https://www.notion.so/Medium-Blog-Eddium-62e99f13065b4708922dd01c9eef9395
 
@@ -40,4 +40,4 @@ yarn run start
 ```
 
 
-## Review GraphQL (GraphQL을 쓴 소감)
+## Review GraphQL

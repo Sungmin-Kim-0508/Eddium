@@ -1,8 +1,13 @@
-import { Arg, Args, ArgsType, Field, Mutation, ObjectType, Query, Resolver } from "type-graphql";
+import { Arg, Args, ArgsType, Ctx, Field, Mutation, ObjectType, Query, Resolver } from "type-graphql";
 import bcrypt from "bcrypt"
+// import jwt from 'jsonwebtoken'
 import { userService } from '../services/user.service'
 import { User } from '../models/User'
 import { isEmail, validatePassword } from "../utils/validations";
+import { ApolloError } from "apollo-server-express";
+import { COOKIE_NAME } from "../constants";
+import { errorsProperties } from "../utils/errorValue";
+import { HttpContext } from "src/types";
 
 @ArgsType()
 class EmailPasswordInput {
@@ -12,7 +17,7 @@ class EmailPasswordInput {
   @Field()
   password: string
 
-  @Field(() => String)
+  @Field(() => String, { nullable: true })
   confirmedPassword: string;
 }
 
@@ -61,19 +66,13 @@ export class UserResolver {
       const passwordValidator = validatePassword(password, confirmedPassword)
       if (!isEmail) {
         return {
-          errors: [{
-            field: 'email',
-            message: 'email is not valid'
-          }]
+          errors: errorsProperties('email', 'email is not valid')
         }
       }
 
       if (passwordValidator.isInvalid) {
         return {
-          errors: [{
-            field: 'password',
-            message: passwordValidator.description
-          }]
+          errors: errorsProperties('password', passwordValidator.description)
         }
       }
 
@@ -85,14 +84,69 @@ export class UserResolver {
     } catch (error) {
       if (error.code === '23505') {
         return {
-          errors: [{
-            field: 'error',
-            message: 'email already existed'
-          }]
+          errors: errorsProperties('error', 'email already existed')
         }
       } else {
-        throw new Error('Error:' + error)
+        throw new ApolloError(error.message, error.code)
       }
     }
+  }
+  
+  @Mutation(() => UserResponse)
+  async login(
+    @Args() { email, password } : EmailPasswordInput,
+    @Ctx() { req }: HttpContext
+  ): Promise<UserResponse> {
+    try {
+      const user = await userService.findBy({
+        where: {
+          email
+        }
+      })
+  
+      if (!user) {
+        return {
+          errors: errorsProperties('email', "email doesn't exist")
+        }
+      }
+  
+      const validPassword = await bcrypt.compare(password, user.password)
+
+      if (!validPassword) {
+        return {
+          errors: errorsProperties('password', 'incorrect password.')
+        }
+      }
+
+      req.session.userId = user.id
+
+      return { user }
+    } catch (error) {
+      throw new ApolloError(error.message, error.code)
+    }
+  }
+
+  @Query(() => User, { nullable: true })
+  async me(
+    @Ctx() { req }: HttpContext
+  ) {
+    if (!req.session.userId) {
+      return null
+    }
+
+    const user = await userService.findById(req.session.userId)
+    return user
+  }
+
+  @Mutation(() => Boolean)
+  logout(@Ctx() { req, res }: HttpContext) {
+    return new Promise (resolve => req.session.destroy(err => {
+      res.clearCookie(COOKIE_NAME);
+      if (err) {
+        resolve(false)
+        return
+      }
+      resolve(true)
+    }))
   }
 }

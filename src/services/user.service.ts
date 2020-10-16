@@ -2,13 +2,15 @@ import { User } from '../models/User';
 
 
 export const userService = {
-  findBy: (where: object) => {
-    return User.find({ where })
+  findBy: async (where: object) => {
+    const user = await User.find(where)
+    return user[0]
   },
-  findById: (userId: string) => {
-    return User.find({ where: {
+  findById: async (userId: string) => {
+    const user = await User.find({ where: {
       id: userId
     }})
+    return user[0]
   },
   findAll: () => {
     return User.find({})
