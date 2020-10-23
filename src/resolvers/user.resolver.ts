@@ -1,6 +1,5 @@
 import { Arg, Args, ArgsType, Ctx, Field, Mutation, ObjectType, Query, Resolver } from "type-graphql";
 import bcrypt from "bcrypt"
-// import jwt from 'jsonwebtoken'
 import { userService } from '../services/user.service'
 import { User } from '../models/User'
 import { isEmail, validatePassword } from "../utils/validations";
@@ -9,24 +8,25 @@ import { COOKIE_NAME } from "../constants";
 import { errorsProperties } from "../utils/errorValue";
 import { HttpContext } from "src/types";
 
+// When you have as many arguments as you can't list, use @ArgsType()
 @ArgsType()
 class EmailPasswordInput {
-  @Field()
+  @Field(() => String!)
   email: string;
 
   @Field()
   password: string
 
-  @Field(() => String, { nullable: true })
+  @Field(() => String!, { nullable: true })
   confirmedPassword: string;
 }
 
 @ArgsType()
 class UserNameInput {
-  @Field()
+  @Field(() => String!)
   firstName: string;
 
-  @Field(() => String)
+  @Field(() => String!)
   lastName: string;
 }
 
@@ -60,31 +60,36 @@ export class UserResolver {
   @Mutation(() => UserResponse)
   async register(
     @Args() { email, password, confirmedPassword }: EmailPasswordInput,
-    @Args() { firstName, lastName } : UserNameInput
+    @Args() { firstName, lastName } : UserNameInput,
+    @Ctx() { req }: HttpContext
   ): Promise<UserResponse>  {
     try {
-      const passwordValidator = validatePassword(password, confirmedPassword)
       if (!isEmail) {
         return {
-          errors: errorsProperties('email', 'email is not valid')
+          errors: errorsProperties('email', 'Email is not valid')
         }
       }
-
+      
+      const passwordValidator = validatePassword(password, confirmedPassword)
       if (passwordValidator.isInvalid) {
         return {
           errors: errorsProperties('password', passwordValidator.description)
         }
       }
 
-      const hashedPassword = bcrypt.hashSync(password, 10)
+      const hashedPassword = await bcrypt.hash(password, 10)
       
       const user = await userService.create(firstName, lastName, email, hashedPassword)
+
+      // store user id session
+      // keep them logged in
+      req.session.userId = user.id
 
       return { user }
     } catch (error) {
       if (error.code === '23505') {
         return {
-          errors: errorsProperties('error', 'email already existed')
+          errors: errorsProperties('error', 'Email already existed')
         }
       } else {
         throw new ApolloError(error.message, error.code)

@@ -10,7 +10,7 @@ export const validatePassword = (password: string, confirmedPassword: string): {
   let description = '';
   let isInvalid = false;
 
-  if (password.localeCompare(confirmedPassword) === 1) {
+  if (password !== confirmedPassword) {
     description = `Password and confirmed password does not match`
     isInvalid = true
     return {
@@ -19,8 +19,8 @@ export const validatePassword = (password: string, confirmedPassword: string): {
     }
   }
 
-  if (password.length < MIN) description += `A password has to be at least ${MIN} characters long.\n`;
-  if (password.length > MAX) description += `A password has to be between ${MIN} and ${MAX} characters long.\n`;
+  if (password.length < MIN) description += `- A password has to be at least ${MIN} characters long.\n`;
+  if (password.length > MAX) description += `- A password has to be between ${MIN} and ${MAX} characters long.\n`;
 
   if (description.includes('\n')) description.replace('\n', '');
 

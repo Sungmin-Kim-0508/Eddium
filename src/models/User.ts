@@ -27,12 +27,15 @@ export class User extends BaseEntity {
   @Column()
   password: string;
 
+  @Field(_type => [Story], { nullable: true })
   @OneToMany(() => Story, story => story.user)
   stories: Story[];
 
+  @Field(_type => [Comment], { nullable: true })
   @OneToMany(() => Comment, comment => comment.user)
   comments: Comment[];
 
+  @Field(_type => [SavedStory], { nullable: true })
   @ManyToMany(_type => SavedStory)
   @JoinTable({ name: 'UserSavedStories' })
   savedStories: SavedStory[];

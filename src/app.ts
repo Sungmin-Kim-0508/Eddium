@@ -46,7 +46,8 @@ const main = async () => {
     context: ({ req, res }: HttpContext) => ({ req, res })
   })
 
-  apolloServer.applyMiddleware({ app })
+  // when you are on production. you have to change the address for origin.
+  apolloServer.applyMiddleware({ app, cors: { origin: 'http://localhost:3000', credentials: true } })
 
   app.listen(PORT, () => {
     console.log('listening on localhost:4000/graphql');
