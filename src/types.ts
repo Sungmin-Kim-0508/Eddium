@@ -1,7 +1,8 @@
 import { Request, Response } from 'express'
+import { Redis } from "ioredis"
 
 export type HttpContext = {
   req: Request & { session: Express.Session };
-  // req: Request;
+  redis: Redis;
   res: Response;
 }

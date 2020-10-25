@@ -1,32 +1,43 @@
 import { Arg, Args, ArgsType, Ctx, Field, Mutation, ObjectType, Query, Resolver } from "type-graphql";
 import bcrypt from "bcrypt"
+import { v4 } from 'uuid'
 import { userService } from '../services/user.service'
 import { User } from '../models/User'
 import { isEmail, validatePassword } from "../utils/validations";
 import { ApolloError } from "apollo-server-express";
-import { COOKIE_NAME } from "../constants";
+import { COOKIE_NAME, FORGET_PASSWORD_PREFIX } from "../constants";
 import { errorsProperties } from "../utils/errorValue";
-import { HttpContext } from "src/types";
+import { HttpContext } from "../types";
+import { sendEmail } from "../utils/sendEmail";
 
 // When you have as many arguments as you can't list, use @ArgsType()
 @ArgsType()
 class EmailPasswordInput {
-  @Field(() => String!)
+  @Field()
   email: string;
 
   @Field()
   password: string
 
-  @Field(() => String!, { nullable: true })
+  @Field({ nullable: true })
+  confirmedPassword: string;
+}
+
+@ArgsType()
+class PasswordInput {
+  @Field()
+  password: string
+
+  @Field({ nullable: true })
   confirmedPassword: string;
 }
 
 @ArgsType()
 class UserNameInput {
-  @Field(() => String!)
+  @Field()
   firstName: string;
 
-  @Field(() => String!)
+  @Field()
   lastName: string;
 }
 
@@ -64,7 +75,7 @@ export class UserResolver {
     @Ctx() { req }: HttpContext
   ): Promise<UserResponse>  {
     try {
-      if (!isEmail) {
+      if (!isEmail(email)) {
         return {
           errors: errorsProperties('email', 'Email is not valid')
         }
@@ -153,5 +164,60 @@ export class UserResolver {
       }
       resolve(true)
     }))
+  }
+
+  @Mutation(() => Boolean)
+  async forgotPassword(
+    @Arg('email') email: string,
+    @Ctx() { redis }: HttpContext
+  ) {
+    const user = await userService.findBy({
+      where: {
+        email
+      }
+    })
+
+    if (!user) {
+      return true
+    }
+    const token = v4()
+
+    await redis.set(FORGET_PASSWORD_PREFIX + token, user.id, 'ex', 60 * 30)    // 60 seconds * 30 miuntes
+    await sendEmail(email, `<a href="http://localhost:3000/change-password/${token}">reset password</a>`)
+
+    return true
+  }
+
+  @Mutation(() => UserResponse)
+  async changePassword(
+    @Args() { password, confirmedPassword }: PasswordInput,
+    @Arg('token', { nullable: true }) token: string,
+    @Ctx() { req, redis }: HttpContext
+  ): Promise<UserResponse> {
+    const passwordValidator = validatePassword(password, confirmedPassword)
+    if(passwordValidator.isInvalid) {
+      return {
+        errors: errorsProperties('password', 'incorrect password.')
+      }
+    }
+
+    const key = FORGET_PASSWORD_PREFIX + token
+    const userId = await redis.get(key)
+
+    if (userId === null) {
+      return {
+        errors: errorsProperties('tokenExpired', "I was waiting for you so long until you change the password. Would you mind changing the password again?")
+      }
+    }
+
+    const user = await userService.findById(userId)
+
+    user.password = await bcrypt.hash(password, 10)
+
+    await redis.del(key)
+
+    req.session.userId = userId
+    
+    return { user }
   }
 }

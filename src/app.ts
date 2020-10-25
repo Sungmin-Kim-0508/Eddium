@@ -4,8 +4,7 @@ import { ApolloServer } from 'apollo-server-express'
 import { db } from './db'
 import { buildSchema } from 'type-graphql';
 import { UserResolver } from './resolvers/user.resolver';
-import { HttpContext } from './types'
-import redis from 'redis'
+import Redis from 'ioredis'
 import session from 'express-session'
 import connectRedis from 'connect-redis'
 import { COOKIE_NAME, __prod__ } from './constants';
@@ -17,13 +16,13 @@ const main = async () => {
   db();
 
   const RedisStore = connectRedis(session)
-  const redisClient = redis.createClient()
+  const redis = new Redis()
 
   app.use(
     session({
       name: COOKIE_NAME,
       store: new RedisStore({
-        client: redisClient,
+        client: redis,
         disableTouch: true
       }),
       cookie: {
@@ -43,7 +42,7 @@ const main = async () => {
       resolvers: [UserResolver],
       validate: false
     }),
-    context: ({ req, res }: HttpContext) => ({ req, res })
+    context: ({ req, res }) => ({ req, res, redis })
   })
 
   // when you are on production. you have to change the address for origin.
