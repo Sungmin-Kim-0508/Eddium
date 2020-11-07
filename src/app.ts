@@ -4,6 +4,7 @@ import { ApolloServer } from 'apollo-server-express'
 import { db } from './db'
 import { buildSchema } from 'type-graphql';
 import { UserResolver } from './resolvers/user.resolver';
+import { StoryResolver } from "./resolvers/story.resolver"
 import Redis from 'ioredis'
 import session from 'express-session'
 import connectRedis from 'connect-redis'
@@ -39,10 +40,12 @@ const main = async () => {
 
   const apolloServer = new ApolloServer({
     schema: await buildSchema({
-      resolvers: [UserResolver],
+      resolvers: [UserResolver, StoryResolver],
       validate: false
     }),
-    context: ({ req, res }) => ({ req, res, redis })
+    context: ({ req, res }) => ({ req, res, redis }),
+    // exclude stack trace information to the client
+    debug: false
   })
 
   // when you are on production. you have to change the address for origin.

@@ -5,6 +5,7 @@ export const db = async () => {
     // if you don't use any options on createConnection(), createConnection looks for .ormconfig.json automatically.
     await createConnection();
     // await connection.dropDatabase();
+    /** create tables synchronized with models */
     // await connection.synchronize();
   } catch (error) {
     console.error('TypeORM Error: Fail to connect ', error)

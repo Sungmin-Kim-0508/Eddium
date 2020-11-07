@@ -6,3 +6,5 @@ export type HttpContext = {
   redis: Redis;
   res: Response;
 }
+
+export const INTERNAL_SERVER_ERROR = "INTERNAL_SERVER_ERROR"

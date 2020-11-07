@@ -11,7 +11,7 @@
       "dist/models/**/*.js"
    ],
    "migrations": [
-      "src/migrations/**/*.ts"
+      "dist/migrations/**/*.js"
    ],
    "subscribers": [
       "src/subscribers/**/*.ts"
