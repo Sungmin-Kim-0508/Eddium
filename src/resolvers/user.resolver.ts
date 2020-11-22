@@ -60,12 +60,21 @@ class UserResponse {
 
 @Resolver()
 export class UserResolver {
-
-  @Query(() => String)
-  hello(
-    @Arg('name') name: string
+  @Query(() => User, { nullable: true })
+  async me(
+    @Ctx() { req }: HttpContext
   ) {
-    return `Hello ${name}`
+    if (!req.session.userId) {
+      return null
+    }
+
+    const user = await userService.findById(req.session.userId)
+    return user
+  }
+
+  @Query(() => User, { nullable: true })
+  async findBy() {
+    
   }
 
   @Mutation(() => UserResponse)
@@ -140,18 +149,6 @@ export class UserResolver {
     } catch (error) {
       throw new ApolloError(error.message, error.code)
     }
-  }
-
-  @Query(() => User, { nullable: true })
-  async me(
-    @Ctx() { req }: HttpContext
-  ) {
-    if (!req.session.userId) {
-      return null
-    }
-
-    const user = await userService.findById(req.session.userId)
-    return user
   }
 
   @Mutation(() => Boolean)

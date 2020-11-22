@@ -30,9 +30,18 @@ export class Story extends BaseEntity {
   @Column()
   userId: string;
 
+  @Field()
+  @Column({ type: 'boolean', default: false })
+  isPublished: boolean;
+
+  @Field()
+  @Column({ default: '', nullable: true })
+  thumbnail_image_url: string;
+
   @OneToMany(() => SavedStory, savedStory => savedStory.story)
   savedStories: SavedStory[];
 
+  @Field(() => User, { nullable: true })
   @ManyToOne(() => User, user => user.stories)
   user: User;
 

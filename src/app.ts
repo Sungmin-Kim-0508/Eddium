@@ -48,7 +48,7 @@ const main = async () => {
     debug: false
   })
 
-  // when you are on production. you have to change the address for origin.
+  // when you are on production, you have to change the address for origin.
   apolloServer.applyMiddleware({ app, cors: { origin: 'http://localhost:3000', credentials: true } })
 
   app.listen(PORT, () => {
